@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Loans')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('loans')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Loans')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <div class="view-select-wrap">
+            <form th:action="@{/loans}" method="get">
+                <select id="viewSelect" name="view" class="view-select" onchange="this.form.submit()">
+                    <option value="active" th:selected="${view == 'active'}">Active</option>
+                    <option value="history" th:selected="${view == 'history'}">Fully Paid</option>
+                    <option value="all" th:selected="${view == 'all'}">All</option>
+                </select>
+            </form>
+        </div>
+            <div class="page-toolbar">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="liveSearch" placeholder="Search lender, phone, loan..." th:value="${query}"/>
+                </div>
+
+                <form th:action="@{/loans}" method="get" class="filter-bar">
+                    <input type="hidden" name="view" th:value="${view}"/>
+                    <select name="status" class="form-control form-select form-select--sm" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option th:each="s : ${statuses}" th:value="${s}" th:text="${#strings.replace(s,'_',' ')}" th:selected="${s == statusFilter}"></option>
+                    </select>
+                    <select name="priority" class="form-control form-select form-select--sm" onchange="this.form.submit()">
+                        <option value="">All Priorities</option>
+                        <option th:each="p : ${priorities}" th:value="${p}" th:text="${p}" th:selected="${p == priorityFilter}"></option>
+                    </select>
+                    <a th:href="@{/loans}" class="btn btn--secondary btn--sm">Reset</a>
+                </form>
+
+                <a th:href="@{/loans/new}" class="btn btn--primary">
+                    <i class="bi bi-plus-lg"></i> Add Loan
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="table-wrap">
+                    <table class="data-table" id="loansTable">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Loan ID</th>
+                            <th>Lender</th>
+                            <th>Amount</th>
+                            <th>Remaining</th>
+                            <th>Due Date</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="loan, iter : ${loans}">
+                            <td th:text="${iter.count}">1</td>
+                            <td th:text="'#' + ${loan.id}">#1</td>
+                            <td th:text="${loan.lender.name}">Lender</td>
+                            <td th:text="'৳ ' + ${#numbers.formatDecimal(loan.amount, 0, 'COMMA', 2, 'POINT')}">0</td>
+                            <td th:text="'৳ ' + ${#numbers.formatDecimal(loan.remainingAmount, 0, 'COMMA', 2, 'POINT')}">0</td>
+                            <td th:text="${#temporals.format(loan.dueDate, 'dd MMM yyyy')}">Date</td>
+                            <td><span th:replace="~{fragments/badges :: priorityBadge(${loan.priority})}"></span></td>
+                            <td><span th:replace="~{fragments/badges :: statusBadge(${loan.status})}"></span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a th:href="@{/loans/{id}(id=${loan.id})}" class="icon-btn" title="View"><i class="bi bi-eye"></i></a>
+
+                                    <a th:unless="${loan.fullyLocked or #lists.contains(communityLockedIds, loan.id)}" th:href="@{/loans/{id}/edit(id=${loan.id})}" class="icon-btn" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <span th:if="${loan.fullyLocked or #lists.contains(communityLockedIds, loan.id)}" class="icon-btn icon-btn--disabled" title="Fully settled loans can't be edited">
+                                        <i class="bi bi-pencil"></i>
+                                    </span>
+
+                                    <form th:if="${loan.deletable and !#lists.contains(communityLockedIds, loan.id)}" th:action="@{/loans/{id}/delete(id=${loan.id})}" method="post"
+                                          class="confirm-delete-form" data-name="this loan">
+                                        <button type="submit" class="icon-btn icon-btn--danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                    <span th:unless="${loan.deletable and !#lists.contains(communityLockedIds, loan.id)}" class="icon-btn icon-btn--disabled" title="Payments already recorded — can't delete">
+                                        <i class="bi bi-trash"></i>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="empty-state" th:if="${loans.isEmpty() and view == 'history'}">
+                        <i class="bi bi-check2-circle"></i>
+                        <p class="empty-state__title">No Fully Paid Loans Yet</p>
+                        <p class="empty-state__desc">Loans move here automatically once their remaining balance reaches zero.</p>
+                    </div>
+                    <div class="empty-state" th:if="${loans.isEmpty() and view != 'history'}">
+                        <i class="bi bi-cash-coin"></i>
+                        <p class="empty-state__title">No Loans Found</p>
+                        <p class="empty-state__desc">Click "Add Loan" to create your first loan.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+        <h3>Delete Loan?</h3>
+        <p>This action cannot be undone.</p>
+        <div class="modal__actions">
+            <button type="button" class="btn btn--secondary" id="modalCancel">Cancel</button>
+            <button type="button" class="btn btn--danger" id="modalConfirm">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/table.js}"></script>
+</body>
+</html>

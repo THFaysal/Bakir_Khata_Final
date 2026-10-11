@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Payment')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('payments')}"></div>
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Payment')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+        <main class="page">
+            <div class="form-page">
+                <div class="card">
+                    <div class="card__header">
+                        <div>
+                            <h3>Repay a loan</h3>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <div class="alert alert--warning" role="status" style="margin-bottom:16px">
+                            <strong>Final-year project demonstration:</strong>
+                            Digital payments use local simulation or the SSLCOMMERZ SANDBOX. No real money moves to any lender.
+                        </div>
+                        <form th:action="@{/payments/start}" th:object="${paymentDTO}" method="post" class="form" id="paymentForm"
+                              th:attr="data-fee-percent=${serviceFeePercent},data-bank-available=${bankSandboxAvailable}">
+                            <input type="hidden" th:field="*{holdConfirmed}" id="holdConfirmed"/>
+
+                            <div class="form-group" th:classappend="${#fields.hasErrors('loanId')} ? 'form-group--invalid'">
+                                <label for="loanId">Loan</label>
+                                <select id="loanId" th:field="*{loanId}" class="form-control form-select" required>
+                                    <option value="">Select loan</option>
+                                    <option th:each="loan : ${loans}" th:value="${loan.id}"
+                                            th:text="${loan.lender.name + ' · Remaining ৳' + #numbers.formatDecimal(loan.remainingAmount,0,'COMMA',2,'POINT')}"
+                                            th:attr="data-lender-user-id=${loan.lender.linkedUser != null ? loan.lender.linkedUser.id : ''},data-lender-name=${loan.lender.name},data-remaining=${loan.remainingAmount},data-penalty=${loan.overduePenalty}"></option>
+                                </select>
+                                <span class="form-error" th:if="${#fields.hasErrors('loanId')}" th:errors="*{loanId}"></span>
+                                <span class="form-hint">Confirmed payments require the lender to have a linked Bakir Khata account.</span>
+                            </div>
+
+                            <div class="form-group" th:classappend="${#fields.hasErrors('amount')} ? 'form-group--invalid'">
+                                <label for="amount">Repayment amount</label>
+                                <input id="amount" type="number" min="0.01" step="0.01" th:field="*{amount}" class="form-control" placeholder="1000.00" required/>
+                                <span class="form-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Payment method</label>
+                                <div class="payment-method-grid">
+                                    <label class="payment-method-card"><input type="radio" th:field="*{method}" value="CASH"><i class="bi bi-cash-stack"></i><span><strong>Cash</strong></span></label>
+                                    <label class="payment-method-card"><input type="radio" th:field="*{method}" value="BANK"><i class="bi bi-bank"></i><span><strong>Bank</strong><small th:text="' (under construction)'"> (under construction)</small></span></label>
+                                    <label class="payment-method-card"><input type="radio" th:field="*{method}" value="MOBILE_BANKING"><i class="bi bi-phone"></i><span><strong>Mobile</strong></span></label>
+                                </div>
+                            </div>
+
+                            <div id="bankConstructionNotice" class="alert alert--danger" role="alert" hidden>
+                                Bank Payment - Under Construction. The application cannot verify bank account ownership. SSLCOMMERZ merchant sandbox checkout is not bank-account verification.
+                            </div>
+                            <div id="mobileProviderSection" class="form-group is-hidden">
+                                <label>Mobile provider</label>
+                                <div class="provider-choice-grid">
+                                    <label class="provider-choice"><input type="radio" name="mobileProviderChoice" value="BKASH"><span>bKash</span></label>
+                                    <label class="provider-choice"><input type="radio" name="mobileProviderChoice" value="NAGAD"><span>Nagad</span></label>
+                                    <label class="provider-choice"><input type="radio" name="mobileProviderChoice" value="ROCKET"><span>Rocket</span></label>
+                                </div>
+                            </div>
+
+                            <div id="destinationSection" class="form-group " hidden>
+                                <label>Lender payment destination</label>
+                                <div id="destinationList">
+                                    <label class="payment-destination" th:each="account : ${paymentAccounts}"
+                                           th:attr="data-owner=${account.user.id},data-account-type=${account.type.name()},data-provider=${account.mobileProvider != null ? account.mobileProvider.name() : ''},data-bank=${account.bankName},data-holder=${account.accountHolderName},data-number=${account.maskedDestination},data-branch=${account.branchName},data-routing=${account.routingNumber}">
+                                        <input type="radio" th:field="*{paymentAccountId}" th:value="${account.id}">
+                                        <i class="bi" th:classappend="${account.type.name() == 'BANK'} ? 'bi-bank' : 'bi-phone'"></i>
+                                        <span th:if="${account.type.name() == 'BANK'}">
+                                            <strong th:text="${account.bankName}">Bank</strong>
+                                            <small th:text="${account.maskedDestination + ' · ' + account.accountHolderName}">Account</small>
+                                        </span>
+                                        <span th:if="${account.type.name() == 'MOBILE'}">
+                                            <strong th:text="${account.mobileProvider.displayName}">Mobile</strong>
+                                            <small th:text="${account.maskedDestination + ' · lender test number'}">Number</small>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="alert alert--danger" id="noDestination" hidden>No OTP-confirmed lender test number is available. Ask the lender to verify a mobile destination in Profile.</div>
+                                <span class="form-error" th:if="${#fields.hasErrors('paymentAccountId')}" th:errors="*{paymentAccountId}"></span>
+
+                                <div class="destination-detail" id="destinationDetail" hidden>
+                                    <strong id="destinationDetailTitle">Recipient details</strong>
+                                    <div id="destinationDetailBody"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="note">Note (optional)</label>
+                                <textarea id="note" th:field="*{note}" class="form-control" rows="2" placeholder="Payment note"></textarea>
+                            </div>
+
+                            <div class="payment-summary">
+                                <div class="payment-summary__row"><span>Loan repayment</span><strong id="summaryPrincipal">৳0.00</strong></div>
+                                <div class="payment-summary__row"><span th:text="${'Service fee (' + serviceFeePercent + '%)'}">Service fee</span><strong id="summaryFee">৳0.00</strong></div>
+                                <div class="payment-summary__row"><span>Current overdue penalty</span><strong id="summaryPenalty">৳0.00</strong></div>
+                                <div class="payment-summary__row payment-summary__row--total"><span>Total payable</span><strong id="summaryTotal">৳0.00</strong></div>
+                                <div class="form-hint">Principal reduces the loan. The service fee is platform revenue; overdue penalty is tracked separately.</div>
+                            </div>
+
+                            <div class="form-actions">
+                                <a th:href="@{/dashboard}" class="btn btn--secondary">Cancel</a>
+                                <button type="button" class="btn btn--primary hold-pay" id="holdPayBtn">
+                                    <span class="hold-pay__progress" id="holdProgress"></span>
+                                    <span class="hold-pay__label" id="holdLabel">Hold 3 seconds to pay</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/payment-form.js}"></script>
+</body>
+</html>

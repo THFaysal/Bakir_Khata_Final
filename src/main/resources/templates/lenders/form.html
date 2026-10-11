@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${lenderDTO.id != null ? 'Edit Lender' : 'Add Lender'})}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('lenders')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar(${lenderDTO.id != null ? 'Edit Lender' : 'Add Lender'})}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <main class="page">
+            <div class="form-card-wrap">
+                <div class="card form-card">
+                    <div class="card__header">
+                        <h3 th:text="${lenderDTO.id != null ? 'Edit Lender' : 'Add New Lender'}">Add Lender</h3>
+                    </div>
+                    <div class="card__body">
+                        <form th:action="@{/lenders/save}" th:object="${lenderDTO}" method="post" enctype="multipart/form-data" class="form" id="lenderForm" novalidate>
+                            <input type="hidden" th:field="*{id}"/>
+                            <input type="hidden" th:field="*{existingProfileImagePath}"/>
+
+                            <h4 class="form-section-title">Basic Information</h4>
+
+                            <div class="form-row">
+                                <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('name')} ? 'form-group--invalid'">
+                                    <input type="text" id="name" th:field="*{name}" class="form-control" placeholder=" " required/>
+                                    <label for="name">Full name <span class="required-mark">*</span></label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Error</span>
+                                </div>
+
+                                <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('phone')} ? 'form-group--invalid'">
+                                    <input type="tel" id="phone" th:field="*{phone}" class="form-control" placeholder=" " required/>
+                                    <label for="phone">Phone <span class="required-mark">*</span></label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Error</span>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('email')} ? 'form-group--invalid'">
+                                    <input type="email" id="email" th:field="*{email}" class="form-control" placeholder=" "/>
+                                    <label for="email">Email (optional)</label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Error</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="relationship">Relationship <span class="required-mark">*</span></label>
+                                    <select id="relationship" th:field="*{relationship}" class="form-control form-select" required>
+                                        <option value="">Select relationship</option>
+                                        <option value="FRIEND">Friend</option>
+                                        <option value="RELATIVE">Relative</option>
+                                        <option value="ROOMMATE">Roommate</option>
+                                        <option value="OFFICE_COLLEAGUE">Office Colleague</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                    <span class="form-error" th:if="${#fields.hasErrors('relationship')}" th:errors="*{relationship}">Error</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <textarea id="address" th:field="*{address}" class="form-control" rows="2"></textarea>
+                            </div>
+
+                            <h4 class="form-section-title">Profile Photo</h4>
+                            <div class="form-group">
+                                <label for="profileImage" class="file-upload">
+                                    <i class="bi bi-cloud-arrow-up"></i>
+                                    <span>Click to upload a photo (optional)</span>
+                                    <input type="file" id="profileImage" th:field="*{profileImage}" class="file-upload__input" accept="image/*"/>
+                                </label>
+                                <img id="profileImagePreview" class="image-preview is-hidden" alt="Preview"/>
+                            </div>
+
+                            <h4 class="form-section-title">Notes</h4>
+                            <div class="form-group">
+                                <label for="notes">Notes</label>
+                                <textarea id="notes" th:field="*{notes}" class="form-control" rows="3" placeholder="e.g. Only accepts cash, call before paying..."></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <a th:href="@{/lenders}" class="btn btn--secondary">Cancel</a>
+                                <button type="submit" class="btn btn--primary" id="submitBtn">
+                                    <span th:text="${lenderDTO.id != null ? 'Update Lender' : 'Save Lender'}">Save</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/validation.js}"></script>
+<script th:src="@{/js/forms.js}"></script>
+</body>
+</html>

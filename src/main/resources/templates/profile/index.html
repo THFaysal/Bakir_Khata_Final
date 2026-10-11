@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('My Profile')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('profile')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('My Profile')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <main class="page">
+            <div class="detail-grid">
+
+                <div class="card">
+                    <div class="card__header">
+                        <h3><i class="bi bi-person-badge"></i> Identification</h3>
+                    </div>
+                    <div class="card__body profile-identity">
+                        <div class="profile-photo-wrap">
+                            <img th:if="${currentUser.profileImagePath}"
+                                 th:src="${currentUser.profileImagePath}"
+                                 class="profile-photo"
+                                 alt="Profile photo"/>
+                            <span th:unless="${currentUser.profileImagePath}" class="profile-photo profile-photo--placeholder"
+                                  th:text="${#strings.substring(currentUser.name,0,1)}">U</span>
+                        </div>
+
+                        <form th:action="@{/profile/picture}" method="post" enctype="multipart/form-data" class="form form--spaced">
+                            <label for="profileImage" class="file-upload">
+                                <i class="bi bi-camera"></i>
+                                <span>Upload / change photo</span>
+                                <input type="file" id="profileImage" name="profileImage" class="file-upload__input" accept="image/*" required/>
+                            </label>
+                            <button type="submit" class="btn btn--secondary btn--sm btn--block mt-2">
+                                Save Photo
+                            </button>
+                        </form>
+
+                        <dl class="def-list mt-4">
+                            <dt>Name</dt><dd th:text="${currentUser.name}">Name</dd>
+                            <dt>Email</dt><dd th:text="${currentUser.email}">Email</dd>
+                            <dt>Phone</dt><dd th:text="${currentUser.phone}">Phone</dd>
+                            <dt>Member Since</dt><dd th:text="${#temporals.format(currentUser.createdAt, 'dd MMM yyyy')}">Date</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h3><i class="bi bi-star"></i> Borrower Rating</h3>
+                    </div>
+                    <div class="card__body">
+                        <div class="rating-score">
+                            <span class="rating-score__value" th:text="${rating.score}">3.0</span>
+                            <span class="rating-score__max">/ 5.0</span>
+                        </div>
+                        <div class="rating-stars" aria-hidden="true">
+                            <i class="bi" th:each="i : ${#numbers.sequence(1,5)}"
+                               th:classappend="${i <= rating.filledStars} ? 'bi-star-fill' : 'bi-star'"></i>
+                        </div>
+                        <p class="rating-label" th:text="${rating.label}">New Borrower</p>
+
+                        <div class="rating-breakdown" th:if="${rating.hasHistory}">
+                            <div class="rating-breakdown__row">
+                                <span class="dot dot--green"></span> Paid on time
+                                <strong th:text="${rating.onTimeCount}">0</strong>
+                            </div>
+                            <div class="rating-breakdown__row">
+                                <span class="dot dot--amber"></span> Paid late
+                                <strong th:text="${rating.lateCount}">0</strong>
+                            </div>
+                            <div class="rating-breakdown__row">
+                                <span class="dot dot--red"></span> Currently overdue
+                                <strong th:text="${rating.overdueCount}">0</strong>
+                            </div>
+                        </div>
+                        <p class="empty-state__desc" th:unless="${rating.hasHistory}">
+                            Your rating will build up once you start repaying loans.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h3><i class="bi bi-wallet2"></i> Loan Summary</h3>
+                    </div>
+                    <div class="card__body">
+                        <dl class="def-list">
+                            <dt>Total Loans</dt><dd th:text="${loanCount}">0</dd>
+                            <dt>Total Borrowed</dt><dd th:text="'৳ ' + ${#numbers.formatDecimal(totalBorrowed, 0, 'COMMA', 2, 'POINT')}">0</dd>
+                            <dt>Total Paid</dt><dd th:text="'৳ ' + ${#numbers.formatDecimal(totalPaid, 0, 'COMMA', 2, 'POINT')}">0</dd>
+                            <dt>Outstanding Due</dt>
+                            <dd th:text="'৳ ' + ${#numbers.formatDecimal(remaining, 0, 'COMMA', 2, 'POINT')}"
+                                th:classappend="${hasDue} ? 'text-danger'">0</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="payment-accounts">
+                <div class="card__header">
+                    <div>
+                        <h3><i class="bi bi-credit-card"></i> Payment Accounts</h3>
+                        <p class="empty-state__desc">Manage bKash, Nagad, Rocket and bank details. Saving an account never makes it verified.</p>
+                    </div>
+                </div>
+                <div class="card__body">
+                    <div class="alert alert--warning" role="note">
+                        <strong>Verification levels:</strong> An SMS OTP proves access to a phone number, not that a bKash, Nagad or Rocket wallet exists.
+                        Bank ownership checks and provider-registration APIs are not connected, so both are <strong>Under Construction</strong>.
+                        Only confirmed mobile numbers can be used in <strong>demo/sandbox</strong> payments; no real money moves.
+                    </div>
+                    <div class="account-grid mt-3" th:if="${!#lists.isEmpty(paymentAccounts)}">
+                        <section class="account-card" th:each="account : ${paymentAccounts}">
+                            <div class="table-actions">
+                                <span class="badge badge--info" th:text="${account.type.name() == 'BANK' ? 'BANK' : account.mobileProvider.displayName}">Type</span>
+                                <span class="badge badge--warning" th:if="${account.type.name() == 'BANK'}">NOT VERIFIED</span>
+                                <span class="badge badge--warning" th:if="${account.type.name() == 'MOBILE' and !account.phoneControlVerified}">OTP REQUIRED</span>
+                                <span class="badge badge--info" th:if="${account.type.name() == 'MOBILE' and account.demoPhoneProof}">DEMO OTP</span>
+                                <span class="badge badge--success" th:if="${account.type.name() == 'MOBILE' and account.realSmsPhoneProof}">PHONE OTP</span>
+                            </div>
+                            <h3 th:text="${account.displayLabel}">Payment destination</h3>
+                            <p class="form-hint" th:text="${account.verificationStatusText}">Status</p>
+
+                            <div th:if="${accountDevOtp != null and accountDevOtpId == account.id}"
+                                 class="alert alert--warning" role="status">
+                                <strong>DEVELOPMENT ONLY — test OTP:</strong>
+                                <code th:text="${accountDevOtp}">123456</code>
+                                <small>This code was not delivered by SMS and does not prove wallet registration.</small>
+                            </div>
+                            <div th:if="${account.type.name() == 'MOBILE' and !account.phoneControlVerified}" class="payment-account-verify">
+                                <form th:action="@{/profile/payment-accounts/{id}/otp/send(id=${account.id})}" method="post">
+                                    <button type="submit" class="btn btn--primary btn--sm"><i class="bi bi-chat-dots"></i> Send verification OTP</button>
+                                </form>
+                                <form th:action="@{/profile/payment-accounts/{id}/otp/confirm(id=${account.id})}" method="post" class="form payment-account-otp">
+                                    <div class="form-group">
+                                        <label th:for="${'accountOtp-' + account.id}">SMS verification code</label>
+                                        <input class="form-control" th:id="${'accountOtp-' + account.id}" name="code"
+                                               type="text" pattern="[0-9]{4,10}" maxlength="10" inputmode="numeric"
+                                               autocomplete="one-time-code" placeholder="Enter the code" required>
+                                    </div>
+                                    <button type="submit" class="btn btn--secondary btn--sm">Confirm phone OTP</button>
+                                </form>
+                            </div>
+                            <p class="alert alert--warning" th:if="${account.type.name() == 'MOBILE' and account.phoneControlVerified}">
+                                Phone control checked. <strong>Wallet registration is NOT verified.</strong>
+                            </p>
+                            <p class="alert alert--warning" th:if="${account.type.name() == 'BANK'}">
+                                <i class="bi bi-cone-striped"></i> Bank account verification: Under Construction.
+                                Details are saved privately but cannot be selected for bank transfers.
+                            </p>
+
+                            <details class="account-edit">
+                                <summary>Change saved details</summary>
+                                <form th:if="${account.type.name() == 'MOBILE'}"
+                                      th:action="@{/profile/payment-accounts/{id}/mobile/update(id=${account.id})}"
+                                      method="post" class="form form--spaced">
+                                    <div class="form-group">
+                                        <label>Mobile wallet provider</label>
+                                        <select name="provider" class="form-control form-select" required>
+                                            <option th:each="p : ${mobileProviders}" th:value="${p}" th:text="${p.displayName}"
+                                                    th:selected="${p == account.mobileProvider}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Full mobile number (re-enter to change)</label>
+                                        <input name="mobileNumber" class="form-control" type="tel" maxlength="20"
+                                               placeholder="01712345678" autocomplete="off" required>
+                                    </div>
+                                    <p class="form-hint">Changing the provider or number removes existing verification; request a fresh OTP.</p>
+                                    <button type="submit" class="btn btn--secondary btn--sm">Update mobile destination</button>
+                                </form>
+                                <form th:if="${account.type.name() == 'BANK'}"
+                                      th:action="@{/profile/payment-accounts/{id}/bank/update(id=${account.id})}"
+                                      method="post" class="form form--spaced">
+                                    <div class="form-group"><label>Bank name</label><input name="bankName" class="form-control" maxlength="80" th:value="${account.bankName}" required></div>
+                                    <div class="form-group"><label>Account holder</label><input name="accountHolderName" class="form-control" maxlength="120" th:value="${account.accountHolderName}" required></div>
+                                    <div class="form-group"><label>Account number (re-enter to change)</label><input name="accountNumber" class="form-control" inputmode="numeric" minlength="6" maxlength="40" autocomplete="off" placeholder="Enter account number" required></div>
+                                    <div class="form-group"><label>Branch</label><input name="branchName" class="form-control" maxlength="100" th:value="${account.branchName}"></div>
+                                    <div class="form-group"><label>Routing number (optional, 9 digits)</label><input name="routingNumber" class="form-control" pattern="[0-9]{9}" maxlength="9" inputmode="numeric" th:value="${account.routingNumber}"></div>
+                                    <button type="submit" class="btn btn--secondary btn--sm">Update bank details (unverified)</button>
+                                </form>
+                            </details>
+                            <form class="account-delete" th:action="@{/profile/payment-accounts/{id}/remove(id=${account.id})}" method="post">
+                                <button type="submit" class="btn btn--danger btn--sm">Remove destination</button>
+                            </form>
+                        </section>
+                    </div>
+                    <div class="empty-state" th:if="${#lists.isEmpty(paymentAccounts)}">
+                        <i class="bi bi-wallet"></i><p class="empty-state__title">No payment destinations saved</p>
+                        <p class="empty-state__desc">Add a mobile number, then request OTP confirmation.</p>
+                    </div>
+
+                    <div class="detail-grid mt-3">
+                        <form th:action="@{/profile/payment-accounts/mobile}" method="post" class="form account-new">
+                            <h4 class="form-section-title"><i class="bi bi-phone"></i> Add mobile wallet number</h4>
+                            <div class="form-group"><label>Provider</label>
+                                <select name="provider" class="form-control form-select" required>
+                                    <option value="">Choose a provider</option>
+                                    <option th:each="p : ${mobileProviders}" th:value="${p}" th:text="${p.displayName}"></option>
+                                </select></div>
+                            <div class="form-group"><label>Bangladesh mobile number</label>
+                                <input type="tel" name="mobileNumber" class="form-control" maxlength="20" inputmode="tel"
+                                       placeholder="01712345678 or +8801712345678" required>
+                                <span class="form-hint">Saved as unverified. SMS OTP is the next step; wallet registration is not checked.</span>
+                            </div>
+                            <button type="submit" class="btn btn--primary">Save number - OTP required</button>
+                        </form>
+                        <form th:action="@{/profile/payment-accounts/bank}" method="post" class="form account-new">
+                            <h4 class="form-section-title"><i class="bi bi-bank"></i> Add bank account</h4>
+                            <div class="form-group"><label>Bank name</label><input name="bankName" class="form-control" maxlength="80" placeholder="Enter bank name" required></div>
+                            <div class="form-group"><label>Account holder</label><input name="accountHolderName" class="form-control" maxlength="120" placeholder="Name on account" required></div>
+                            <div class="form-group"><label>Account number</label><input name="accountNumber" class="form-control" maxlength="40" inputmode="numeric" autocomplete="off" placeholder="6-30 digits" required></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Branch</label><input name="branchName" class="form-control" maxlength="100" placeholder="Optional"></div>
+                                <div class="form-group"><label>Routing number</label><input name="routingNumber" class="form-control" maxlength="9" inputmode="numeric" pattern="[0-9]{9}" placeholder="9 digits (optional)"></div>
+                            </div>
+                            <p class="form-hint">Bank details cannot be verified automatically in this version. Direct bank payments remain Under Construction.</p>
+                            <button type="submit" class="btn btn--secondary">Save unverified bank details</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card__header">
+                    <h3><i class="bi bi-exclamation-triangle"></i> Danger Zone</h3>
+                </div>
+                <div class="card__body">
+                    <div class="alert alert--danger" th:if="${hasDue}">
+                        You still owe <strong th:text="'৳ ' + ${#numbers.formatDecimal(remaining, 0, 'COMMA', 2, 'POINT')}">0</strong>
+                        across your loans. You must clear all outstanding dues before you can delete your profile.
+                    </div>
+                    <p class="empty-state__desc mb-3">
+                        Disabling your profile blocks future sign-in while preserving financial history for audit and transaction integrity.
+                    </p>
+
+                    <form th:action="@{/profile/delete}" method="post" class="confirm-delete-form" data-name="your profile">
+                        <button type="submit" class="btn btn--danger" th:disabled="${hasDue}">
+                            <i class="bi bi-trash"></i> Disable My Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+        <h3>Disable Your Profile?</h3>
+        <p>This disables future sign-in but preserves historical financial records required for audit integrity.</p>
+        <div class="modal__actions">
+            <button type="button" class="btn btn--secondary" id="modalCancel">Cancel</button>
+            <button type="button" class="btn btn--danger" id="modalConfirm">Disable Account</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/forms.js}"></script>
+<script th:src="@{/js/table.js}"></script>
+</body>
+</html>

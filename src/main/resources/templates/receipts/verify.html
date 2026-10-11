@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Verify receipt')}"></head>
+<body class="auth-body">
+<main class="auth-wrap">
+    <section class="auth-card" style="max-width:480px;text-align:center">
+        <img th:src="@{/branding/bakir-khata-mark.png}" alt="Bakir Khata emblem" style="height:108px;max-width:180px;object-fit:contain"/>
+        <h1>Receipt verification</h1>
+        <div th:if="${valid}" class="alert alert--success" style="margin-top:14px">
+            <i class="bi bi-patch-check-fill"></i> Signed receipt reference verified
+        </div>
+        <div th:unless="${valid}" class="alert alert--danger" style="margin-top:14px">
+            <i class="bi bi-exclamation-triangle"></i> Invalid or unavailable receipt
+        </div>
+        <p style="word-wrap:break-word"><strong th:text="${reference}">BK-LN-0000000001</strong></p>
+        <p th:text="${receiptStatus}">Status</p>
+        <p style="font-size:13px">This verification confirms only that Bakir Khata issued a matching
+            demo reference. It does not prove actual money movement, creditworthiness, or settlement by a bank.
+            Personal details and amounts are never displayed publicly.</p>
+        <a class="btn btn--primary" th:href="@{/}">Go to Bakir Khata</a>
+    </section>
+</main>
+</body></html>

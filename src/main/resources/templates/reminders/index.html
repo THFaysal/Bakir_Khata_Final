@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Reminders')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('reminders')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Reminders')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <main class="page">
+            <section class="reminder-section">
+                <h3 class="reminder-section__title"><i class="bi bi-calendar-check"></i> Due Today</h3>
+                <div class="reminder-grid">
+                    <div class="empty-state empty-state--inline" th:if="${dueToday.isEmpty()}">
+                        <p class="empty-state__desc">Nothing due today.</p>
+                    </div>
+                    <div class="reminder-card" th:each="loan : ${dueToday}">
+                        <div class="reminder-card__header">
+                            <span th:text="${loan.lender.name}">Lender</span>
+                            <span th:replace="~{fragments/badges :: priorityBadge(${loan.priority})}"></span>
+                        </div>
+                        <p class="reminder-card__amount" th:text="'৳ ' + ${#numbers.formatDecimal(loan.remainingAmount, 0, 'COMMA', 2, 'POINT')}">0</p>
+                        <p class="reminder-card__due">Due Today</p>
+                        <a th:href="@{/payments/new(loanId=${loan.id})}" class="btn btn--primary btn--sm btn--block">Record Payment</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reminder-section">
+                <h3 class="reminder-section__title"><i class="bi bi-calendar-event"></i> Due Tomorrow</h3>
+                <div class="reminder-grid">
+                    <div class="empty-state empty-state--inline" th:if="${dueTomorrow.isEmpty()}">
+                        <p class="empty-state__desc">Nothing due tomorrow.</p>
+                    </div>
+                    <div class="reminder-card" th:each="loan : ${dueTomorrow}">
+                        <div class="reminder-card__header">
+                            <span th:text="${loan.lender.name}">Lender</span>
+                            <span th:replace="~{fragments/badges :: priorityBadge(${loan.priority})}"></span>
+                        </div>
+                        <p class="reminder-card__amount" th:text="'৳ ' + ${#numbers.formatDecimal(loan.remainingAmount, 0, 'COMMA', 2, 'POINT')}">0</p>
+                        <p class="reminder-card__due">Due Tomorrow</p>
+                        <a th:href="@{/payments/new(loanId=${loan.id})}" class="btn btn--primary btn--sm btn--block">Record Payment</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reminder-section">
+                <h3 class="reminder-section__title"><i class="bi bi-exclamation-triangle"></i> Overdue</h3>
+                <div class="reminder-grid">
+                    <div class="empty-state empty-state--inline" th:if="${overdue.isEmpty()}">
+                        <p class="empty-state__desc">No overdue loans. Nice work!</p>
+                    </div>
+                    <div class="reminder-card reminder-card--danger" th:each="loan : ${overdue}">
+                        <div class="reminder-card__header">
+                            <span th:text="${loan.lender.name}">Lender</span>
+                            <span th:replace="~{fragments/badges :: priorityBadge(${loan.priority})}"></span>
+                        </div>
+                        <p class="reminder-card__amount" th:text="'৳ ' + ${#numbers.formatDecimal(loan.remainingAmount, 0, 'COMMA', 2, 'POINT')}">0</p>
+                        <p class="reminder-card__due reminder-card__due--danger" th:text="'Overdue since ' + ${#temporals.format(loan.dueDate, 'dd MMM yyyy')}">Overdue</p>
+                        <a th:href="@{/payments/new(loanId=${loan.id})}" class="btn btn--primary btn--sm btn--block">Record Payment</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

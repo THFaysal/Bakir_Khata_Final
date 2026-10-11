@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Admin Login')}"></head>
+<body class="auth-body">
+<div class="auth-wrap">
+    <div class="auth-card auth-card--admin">
+        <div class="auth-card__brand">
+            <img class="auth-card__image" th:src="@{/branding/bakir-khata-mark.png}" src="/branding/bakir-khata-mark.png" alt="Bakir Khata logo"/>
+            <h1>Bakir Khata Admin</h1>
+            <p>Administrator sign-in.</p>
+        </div>
+
+        <div class="alert alert--danger" th:if="${param.error}">Invalid email/mobile or password.</div>
+        <div class="alert alert--success" th:if="${param.logout}">You have been logged out.</div>
+
+        <!-- Posts to the same processing URL/AuthenticationManager as the regular login form -->
+        <form th:action="@{/login}" method="post" class="form" id="adminLoginForm" novalidate>
+            <div class="form-group form-group--floating">
+                <input type="text" id="identifier" name="identifier" class="form-control" placeholder=" " required autofocus/>
+                <label for="identifier">Email address</label>
+                <i class="bi bi-envelope form-group__icon"></i>
+            </div>
+
+            <div class="form-group form-group--floating">
+                <input type="password" id="credential" name="credential" class="form-control" placeholder=" " required minlength="8"/>
+                <label for="credential">Password</label>
+                <button type="button" class="form-group__toggle" data-toggle-password="credential" aria-label="Show password">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+
+
+            <button type="submit" class="btn btn--primary btn--block">
+                <span>Sign In</span>
+            </button>
+        </form>
+
+        <p class="auth-card__footer"><a th:href="@{/login}">Back to regular login</a></p>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/validation.js}"></script>
+
+</body>
+</html>

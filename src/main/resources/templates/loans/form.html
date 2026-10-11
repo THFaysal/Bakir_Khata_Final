@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${loanDTO.id != null ? 'Edit Loan' : 'Add Loan'})}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('loans')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar(${loanDTO.id != null ? 'Edit Loan' : 'Add Loan'})}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <main class="page">
+            <div class="form-card-wrap">
+                <div class="card form-card">
+                    <div class="card__header">
+                        <h3 th:text="${loanDTO.id != null ? 'Edit Loan' : 'Add New Loan'}">Add Loan</h3>
+                    </div>
+                    <div class="card__body">
+
+                        <p class="form-hint" th:if="${loan != null and loan.partiallyLocked}">
+                            A payment has already been recorded against this loan, so the amount and installment
+                            plan are locked. You can still extend the due date, change priority/tag, and edit notes.
+                        </p>
+
+                        <form th:action="@{/loans/save}" th:object="${loanDTO}" method="post" class="form" id="loanForm" novalidate>
+                            <input type="hidden" th:field="*{id}"/>
+
+                            <h4 class="form-section-title">Loan Details</h4>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="lenderId">Lender <span class="required-mark">*</span></label>
+                                    <select id="lenderId" th:field="*{lenderId}" class="form-control form-select"
+                                            th:disabled="${loanDTO.id != null}" required>
+                                        <option value="">Select lender</option>
+                                        <option th:each="l : ${lenders}" th:value="${l.id}" th:text="${l.name}"></option>
+                                    </select>
+                                    <!-- disabled selects don't submit a value, so mirror it once the loan already exists -->
+                                    <input type="hidden" th:if="${loanDTO.id != null}" name="lenderId" th:value="*{lenderId}"/>
+                                    <span class="form-error" th:if="${#fields.hasErrors('lenderId')}" th:errors="*{lenderId}">Error</span>
+                                    <p class="form-hint" th:if="${loanDTO.id != null}">Lender can't be changed after a loan is created.</p>
+                                    <p class="form-hint" th:if="${lenders.isEmpty() and loanDTO.id == null}">
+                                        No lenders yet — <a th:href="@{/lenders/new}">add one first</a>.
+                                    </p>
+                                </div>
+
+                                <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('amount')} ? 'form-group--invalid'">
+                                    <input type="number" step="0.01" min="0.01" id="amount" th:field="*{amount}" class="form-control"
+                                           placeholder=" " th:readonly="${loan != null and loan.partiallyLocked}" required/>
+                                    <label for="amount">Loan Amount (৳) <span class="required-mark">*</span></label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Error</span>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('borrowDate')} ? 'form-group--invalid'">
+                                    <input type="date" id="borrowDate" th:field="*{borrowDate}" class="form-control" placeholder=" "
+                                           th:readonly="${loanDTO.id != null}" required/>
+                                    <label for="borrowDate">Borrow Date <span class="required-mark">*</span></label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('borrowDate')}" th:errors="*{borrowDate}">Error</span>
+                                </div>
+
+                                <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('dueDate')} ? 'form-group--invalid'">
+                                    <input type="date" id="dueDate" th:field="*{dueDate}" class="form-control" placeholder=" " required/>
+                                    <label for="dueDate">Due Date <span class="required-mark">*</span></label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}">Error</span>
+                                    <span class="form-error is-hidden" id="dueDateError">Due date cannot be before borrow date</span>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="purpose">Purpose</label>
+                                    <select id="purpose" th:field="*{purpose}" class="form-control form-select">
+                                        <option value="">Select purpose</option>
+                                        <option value="House Rent">House Rent</option>
+                                        <option value="Food">Food</option>
+                                        <option value="Medical">Medical</option>
+                                        <option value="Shopping">Shopping</option>
+                                        <option value="Emergency">Emergency</option>
+                                        <option value="Travel">Travel</option>
+                                        <option value="Education">Education</option>
+                                        <option value="Utility Bills">Utility Bills</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="priority">Priority <span class="required-mark">*</span></label>
+                                    <select id="priority" th:field="*{priority}" class="form-control form-select" required>
+                                        <option value="">Select priority</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="LOW">Low</option>
+                                    </select>
+                                    <span class="form-error" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}">Error</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tag">Tag</label>
+                                <select id="tag" th:field="*{tag}" class="form-control form-select">
+                                    <option value="">No tag</option>
+                                    <option value="RENT">Rent</option>
+                                    <option value="FOOD">Food</option>
+                                    <option value="MEDICAL">Medical</option>
+                                    <option value="SHOPPING">Shopping</option>
+                                    <option value="EMERGENCY">Emergency</option>
+                                    <option value="TRAVEL">Travel</option>
+                                    <option value="EDUCATION">Education</option>
+                                    <option value="UTILITY_BILLS">Utility Bills</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
+
+                            <h4 class="form-section-title">Repayment Type</h4>
+                            <div class="form-group">
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="paymentType" value="ONE_TIME" th:field="*{paymentType}"
+                                               th:disabled="${loan != null and loan.partiallyLocked}"/>
+                                        <span>One Time</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="paymentType" value="INSTALLMENT" th:field="*{paymentType}"
+                                               th:disabled="${loan != null and loan.partiallyLocked}"/>
+                                        <span>Installment</span>
+                                    </label>
+                                </div>
+                                <!-- disabled radios don't submit; mirror the current value so it round-trips unchanged -->
+                                <input type="hidden" th:if="${loan != null and loan.partiallyLocked}" name="paymentType" th:value="*{paymentType}"/>
+                            </div>
+
+                            <div class="form-row" id="installmentFields">
+                                <div class="form-group form-group--floating">
+                                    <input type="number" min="2" id="installmentCount" th:field="*{installmentCount}" class="form-control"
+                                           placeholder=" " th:readonly="${loan != null and loan.partiallyLocked}"/>
+                                    <label for="installmentCount">Installment Count</label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('installmentCount')}" th:errors="*{installmentCount}">Error</span>
+                                </div>
+                                <div class="form-group form-group--floating">
+                                    <input type="number" step="0.01" min="0.01" id="expectedInstallmentAmount" th:field="*{expectedInstallmentAmount}"
+                                           class="form-control" placeholder=" " th:readonly="${loan != null and loan.partiallyLocked}"/>
+                                    <label for="expectedInstallmentAmount">Expected Installment Amount (৳)</label>
+                                    <span class="form-error" th:if="${#fields.hasErrors('expectedInstallmentAmount')}" th:errors="*{expectedInstallmentAmount}">Error</span>
+                                </div>
+                            </div>
+
+                            <h4 class="form-section-title">Notes</h4>
+                            <div class="form-group">
+                                <label for="notes">Notes</label>
+                                <textarea id="notes" th:field="*{notes}" class="form-control" rows="3" placeholder="e.g. Must return before Eid, call before paying..."></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <a th:href="@{/loans}" class="btn btn--secondary">Cancel</a>
+                                <button type="submit" class="btn btn--primary" id="submitBtn">
+                                    <span th:text="${loanDTO.id != null ? 'Update Loan' : 'Save Loan'}">Save</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/validation.js}"></script>
+<script th:src="@{/js/forms.js}"></script>
+<script th:src="@{/js/loan-form.js}"></script>
+</body>
+</html>

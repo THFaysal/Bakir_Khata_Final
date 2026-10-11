@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('Coordinator Dashboard')}"></head>
+<body class="app-body"><div class="app-shell"><div th:replace="~{fragments/sidebar :: sidebar('coordinator-dashboard')}"></div><div class="app-main"><div th:replace="~{fragments/topbar :: topbar('Coordinator Operations')}"></div><div th:replace="~{fragments/toast :: toast}"></div>
+<main class="page"><div class="alert alert--warning" role="status" style="margin-bottom:14px">University demo: mobile and sandbox financial amounts may be simulated. Reported totals are demonstration ledger totals, not money transferred or earned by the platform.</div><section class="dashboard-hero"><div><h2>Operations overview</h2><p>Monitor transactions, users and overdue risk without mixing in personal loan-management screens.</p></div></section>
+<section class="stat-grid">
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--blue"><i class="bi bi-arrow-left-right"></i></div><div class="stat-card__body"><span class="stat-card__label">Transactions</span><span class="stat-card__value" th:text="${transactionCount}">0</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--amber"><i class="bi bi-hourglass"></i></div><div class="stat-card__body"><span class="stat-card__label">Pending Verification</span><span class="stat-card__value" th:text="${pendingCount}">0</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--red"><i class="bi bi-x-octagon"></i></div><div class="stat-card__body"><span class="stat-card__label">Failed / Rejected</span><span class="stat-card__value" th:text="${failedCount}">0</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--green"><i class="bi bi-people"></i></div><div class="stat-card__body"><span class="stat-card__label">Active Users</span><span class="stat-card__value" th:text="${activeUsers}">0</span><span class="stat-card__hint" th:text="${overdueCount + ' overdue loans'}">0 overdue</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--blue"><i class="bi bi-graph-up-arrow"></i></div><div class="stat-card__body"><span class="stat-card__label">Gross Revenue</span><span class="stat-card__value" th:text="${'৳ ' + #numbers.formatDecimal(grossRevenue,0,'COMMA',2,'POINT')}">0</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--green"><i class="bi bi-currency-exchange"></i></div><div class="stat-card__body"><span class="stat-card__label">Net Profit</span><span class="stat-card__value" th:text="${'৳ ' + #numbers.formatDecimal(netProfit,0,'COMMA',2,'POINT')}">0</span><span class="stat-card__hint" th:text="${flaggedCount + ' flagged transactions'}">0 flagged</span></div></div>
+</section>
+<section class="chart-grid">
+<div class="card chart-card"><div class="card__header"><h3>7-day transaction volume</h3></div><div class="chart-card__body"><canvas id="volumeChart" data-chart="line" data-label="Successful volume"></canvas></div></div>
+<div class="card chart-card"><div class="card__header"><h3>Payment status</h3></div><div class="chart-card__body chart-card__body--compact"><canvas id="statusChart" data-chart="doughnut" data-label="Transactions"></canvas></div></div>
+<div class="card chart-card"><div class="card__header"><h3>Payment methods</h3></div><div class="chart-card__body chart-card__body--compact"><canvas id="methodChart" data-chart="bar" data-label="Transactions"></canvas></div></div>
+</section>
+<section class="card"><div class="card__header"><h3>Recent system transactions</h3><a th:href="@{/transactions/review}" class="link-muted">View all</a></div><div class="card__body"><div class="table-wrap"><table><thead><tr><th>Borrower</th><th>Lender</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead><tbody><tr th:each="tx:${transactions}"><td th:text="${tx.borrowerName}"></td><td th:text="${tx.lenderName}"></td><td th:text="${'৳'+tx.amount}"></td><td th:text="${tx.paymentProvider != null ? tx.paymentProvider : tx.method}"></td><td><span class="badge badge--gray" th:text="${tx.status}"></span></td></tr></tbody></table></div></div></section>
+</main></div></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+(function () {
+    const volumeLabels = /*[[${volumeLabels}]]*/ [];
+    const volumeValues = /*[[${volumeValues}]]*/ [];
+    const statusLabels = /*[[${statusLabels}]]*/ [];
+    const statusValues = /*[[${statusValues}]]*/ [];
+    const methodLabels = /*[[${methodLabels}]]*/ [];
+    const methodValues = /*[[${methodValues}]]*/ [];
+    const charts = {
+        volumeChart: [volumeLabels, volumeValues],
+        statusChart: [statusLabels, statusValues],
+        methodChart: [methodLabels, methodValues]
+    };
+    Object.entries(charts).forEach(([id, data]) => {
+        const canvas = document.getElementById(id);
+        if (canvas) {
+            canvas.dataset.labels = JSON.stringify(data[0]);
+            canvas.dataset.values = JSON.stringify(data[1]);
+        }
+    });
+})();
+</script>
+<script th:src="@{/js/dashboard-charts.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+</body></html>

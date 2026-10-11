@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('Community')}"></head><body class="app-body">
+<div class="app-shell"><div th:replace="~{fragments/sidebar :: sidebar('community')}"></div><div class="app-main"><div th:replace="~{fragments/topbar :: topbar('Community loan marketplace')}"></div>
+<main class="page page--module"><div th:replace="~{fragments/toast :: toast}"></div>
+<div class="card"><div class="card__body"><h3>Your separate Messenger identity</h3><p><strong th:text="${profile.messengerId}">bk_***</strong> · <span th:text="${plan}">FREE</span> plan</p>
+<form th:action="@{/community/profile}" method="post" enctype="multipart/form-data" class="form"><label>Display name <input name="displayName" required minlength="1" maxlength="60" th:value="${profile.displayName}"></label>
+<label>Avatar (optional) <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp"></label><button class="btn btn--secondary">Update profile</button></form>
+<a th:href="@{/messenger}" class="btn btn--primary">Open private Messenger</a></div></div>
+<div class="card"><div class="card__body"><h3>Broadcast a loan request</h3><p th:text="|Weekly broadcasts: ${used}/${quota} · Active lender limit: ${lenderQuota}|">Quota</p>
+<form class="form form--spaced" th:action="@{/community/broadcasts}" method="post">
+<label>Amount (BDT) <input name="amount" type="number" min="1" max="10000000" step="0.01" required></label>
+<label>Purpose <input name="purpose" maxlength="150" required></label>
+<label>Details <textarea name="description" maxlength="1000" required></textarea></label>
+<label>Repayment after (days) <input name="durationDays" type="number" value="30" min="1" max="365" required></label>
+<button class="btn btn--primary" th:disabled="${used >= quota}">Broadcast to community</button></form></div></div>
+<div class="card"><div class="card__body"><h3>Community broadcasts</h3>
+<div th:each="b : ${feed}" class="card" style="margin-bottom:1rem"><div class="card__body">
+<h4 th:text="${b.purpose}">Education</h4><p th:text="${b.description}">Explanation</p><p><strong th:text="${b.amount}">1000</strong> BDT · <span th:text="${b.durationDays}">30</span> days</p>
+<form th:if="${b.ownerId != currentUser.id}" th:action="@{/community/offers}" method="post"><input type="hidden" name="broadcastId" th:value="${b.id}"><input type="hidden" name="amount" th:value="${b.amount}">
+<label>Note <input name="note" maxlength="600" placeholder="I can lend this amount" required></label><button class="btn btn--secondary">Offer to lend</button></form>
+<form th:if="${b.ownerId != currentUser.id}" th:action="@{/community/reports}" method="post"><input type="hidden" name="broadcastId" th:value="${b.id}"><input name="reason" required maxlength="400" placeholder="Reason for reporting"><button class="btn btn--secondary">Report</button></form>
+</div></div><p th:if="${#lists.isEmpty(feed)}">No open loan requests yet.</p></div></div>
+<div class="card"><div class="card__body"><h3>My broadcasts</h3><div th:each="b : ${owned}"><span th:text="${b.purpose}"></span> (<span th:text="${b.status}"></span>)
+<a th:href="@{/community/broadcasts/{id}/offers(id=${b.id})}">Review offers</a>
+<form th:if="${b.status.name() == 'OPEN'}" th:action="@{/community/broadcasts/{id}/close(id=${b.id})}" method="post" style="display:inline"><button class="btn btn--sm">Close</button></form></div></div></div>
+<div class="card"><div class="card__body"><h3>My lending offers</h3><p th:each="o : ${myOffers}" th:text="|Request #${o.broadcast.id}: ${o.status}|">Offer</p>
+<h3>Confirm demo disbursement</h3><div th:each="a : ${pendingAgreements}"><p th:text="|Agreement #${a.id}: ${a.offer.amount} BDT|">Agreement</p>
+<form th:action="@{/community/agreements/{id}/confirm(id=${a.id})}" method="post"><button class="btn btn--primary">I confirm DEMO disbursement</button></form>
+<form th:action="@{/community/agreements/{id}/cancel(id=${a.id})}" method="post"><button class="btn btn--secondary">Decline the agreement</button></form></div>
+<h3>Agreements awaiting lender confirmation</h3><div th:each="a : ${borrowerPending}"><p th:text="|Agreement #${a.id}: waiting for the lender to confirm|">Pending</p>
+<form th:action="@{/community/agreements/{id}/cancel(id=${a.id})}" method="post"><button class="btn btn--secondary">Cancel pending agreement</button></form></div>
+<h3>Approved lender connections</h3><div th:each="c : ${connections}">
+<p th:text="|Connection #${c.id}, active: ${c.active}|"></p>
+<form th:if="${c.active and c.borrower.id == currentUser.id}" th:action="@{/community/connections/{id}/disconnect(id=${c.lender.id})}" method="post">
+<button class="btn btn--secondary">Disconnect lender (only after loans are settled)</button></form></div></div></div>
+</main></div></div><script th:src="@{/js/main.js}"></script></body></html>

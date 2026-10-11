@@ -1,0 +1,12 @@
+<div th:fragment="statusBadge(status)" class="inline-fragment">
+    <span th:if="${status.name() == 'PAID'}" class="badge badge--success">Paid</span>
+    <span th:if="${status.name() == 'PENDING'}" class="badge badge--info">Pending</span>
+    <span th:if="${status.name() == 'PARTIALLY_PAID'}" class="badge badge--warning">Partially Paid</span>
+    <span th:if="${status.name() == 'OVERDUE'}" class="badge badge--danger">Overdue</span>
+</div>
+
+<div th:fragment="priorityBadge(priority)" class="inline-fragment">
+    <span th:if="${priority.name() == 'HIGH'}" class="badge badge--danger-soft">High</span>
+    <span th:if="${priority.name() == 'MEDIUM'}" class="badge badge--warning-soft">Medium</span>
+    <span th:if="${priority.name() == 'LOW'}" class="badge badge--gray">Low</span>
+</div>

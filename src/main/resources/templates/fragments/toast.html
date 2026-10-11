@@ -1,0 +1,4 @@
+<div id="toastContainer" class="toast-container" th:fragment="toast">
+    <div class="toast toast--success" th:if="${successMessage}" th:text="${successMessage}" data-autohide="true"></div>
+    <div class="toast toast--danger" th:if="${errorMessage}" th:text="${errorMessage}" data-autohide="true"></div>
+</div>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Lenders')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('lenders')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Lenders')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <main class="page">
+            <div class="page-toolbar">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="liveSearch" placeholder="Search lender, phone..." th:value="${query}"/>
+                </div>
+                <a th:href="@{/lenders/new}" class="btn btn--primary">
+                    <i class="bi bi-plus-lg"></i> Add Lender
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="table-wrap">
+                    <table class="data-table" id="lendersTable">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Relationship</th>
+                            <th>Email</th>
+                            <th>Active Loans</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="lender, iter : ${lenders}">
+                            <td th:text="${iter.count}">1</td>
+                            <td>
+                                <div class="table-person">
+                                    <span class="table-person__avatar" th:text="${#strings.substring(lender.name,0,1)}">L</span>
+                                    <span th:text="${lender.name}">Name</span>
+                                </div>
+                            </td>
+                            <td th:text="${lender.phone}">Phone</td>
+                            <td th:text="${#strings.replace(#strings.toLowerCase(lender.relationship), '_', ' ')}">Friend</td>
+                            <td th:text="${lender.email ?: '—'}">Email</td>
+                            <td th:text="${#lists.size(lender.loans)}">0</td>
+                            <td>
+                                <div class="table-actions">
+                                    <a th:href="@{/lenders/{id}/edit(id=${lender.id})}" class="icon-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                                    <form th:action="@{/lenders/{id}/delete(id=${lender.id})}" method="post" class="confirm-delete-form" data-name="this lender">
+                                        <button type="submit" class="icon-btn icon-btn--danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="empty-state" th:if="${lenders.isEmpty()}">
+                        <i class="bi bi-people"></i>
+                        <p class="empty-state__title">No Lenders Found</p>
+                        <p class="empty-state__desc">Click "Add Lender" to store the first person you borrow from.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+        <h3>Delete Lender?</h3>
+        <p>This action cannot be undone.</p>
+        <div class="modal__actions">
+            <button type="button" class="btn btn--secondary" id="modalCancel">Cancel</button>
+            <button type="button" class="btn btn--danger" id="modalConfirm">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/table.js}"></script>
+</body>
+</html>

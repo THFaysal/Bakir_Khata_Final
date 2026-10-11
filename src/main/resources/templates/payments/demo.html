@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Simulated Payment')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('payments')}"></div>
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Test Payment')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+        <main class="page">
+            <section class="card" style="max-width:720px;margin:0 auto">
+                <div class="card__header"><h3>Simulated Mobile Payment</h3></div>
+                <div class="card__body">
+                    <div class="alert alert--warning" role="status" style="margin-bottom:16px">
+                        <strong>UNIVERSITY DEMO — NO REAL MONEY IS SENT.</strong>
+                        This page imitates a payment gateway. Do not enter actual bKash, Nagad, or Rocket credentials or PINs.
+                    </div>
+                    <dl class="def-list">
+                        <dt>Provider</dt><dd th:text="${demoTransaction.paymentProvider}">DEMO - bKash</dd>
+                        <dt>Recipient</dt><dd th:text="${demoTransaction.recipientMasked}">********1234</dd>
+                        <dt>Loan</dt><dd th:text="${'#' + demoTransaction.loanId}">#1</dd>
+                        <dt>Repayment principal</dt><dd th:text="${'৳' + demoTransaction.amount}">৳0</dd>
+                        <dt>Platform fee</dt><dd th:text="${'৳' + demoTransaction.serviceFee}">৳0</dd>
+                        <dt>Overdue penalty</dt><dd th:text="${'৳' + demoTransaction.overduePenalty}">৳0</dd>
+                        <dt>Total simulated charge</dt><dd><strong th:text="${'৳' + demoTransaction.totalPayable}">৳0</strong></dd>
+                    </dl>
+                    <div class="form-actions" th:if="${demoTransaction.status.name() == 'PENDING'}">
+                        <form th:action="@{/payments/demo/{id}/complete(id=${demoTransaction.id})}" method="post">
+                            <input type="hidden" name="outcome" value="FAIL"/>
+                            <button type="submit" class="btn btn--secondary">Simulate Failure</button>
+                        </form>
+                        <form th:action="@{/payments/demo/{id}/complete(id=${demoTransaction.id})}" method="post">
+                            <input type="hidden" name="outcome" value="APPROVE"/>
+                            <button type="submit" class="btn btn--primary">Simulate Successful Payment</button>
+                        </form>
+                    </div>
+                    <div th:unless="${demoTransaction.status.name() == 'PENDING'}" class="alert">
+                        This test payment was already processed. Its current status is <strong th:text="${demoTransaction.status}">SUCCESS</strong>.
+                    </div>
+                    <p style="margin-top:14px"><a th:href="@{/transactions}" class="btn btn--secondary">View transaction history</a></p>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

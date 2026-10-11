@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Login')}"></head>
+<body class="auth-body">
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-card__brand">
+            <img class="auth-card__image" th:src="@{/branding/bakir-khata-mark.png}" src="/branding/bakir-khata-mark.png" alt="Bakir Khata logo"/>
+            <h1>Bakir Khata</h1>
+            <p>Keep track of every taka you borrow, every taka you repay.</p>
+        </div>
+
+        <div class="alert alert--danger" th:if="${param.error}">Invalid email/mobile or password.</div>
+        <div class="alert alert--success" th:if="${param.logout}">You have been logged out of this tab.</div>
+        <div class="alert alert--success" th:if="${param.newTab}">New tab: sign in with the account you want to use here.</div>
+        <div class="alert alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+        <form th:action="@{/login}" method="post" class="form" id="loginForm" novalidate>
+            <div class="form-group form-group--floating">
+                <input type="text" id="identifier" name="identifier" class="form-control" placeholder=" " required autofocus/>
+                <label for="identifier" id="identifierLabel">Email address or mobile number</label>
+                <i class="bi bi-envelope form-group__icon" id="identifierIcon"></i>
+            </div>
+
+            <div class="form-group form-group--floating">
+                <input type="password" id="credential" name="credential" class="form-control" placeholder=" " required minlength="8"/>
+                <label for="credential" id="credentialLabel">Password</label>
+                <button type="button" class="form-group__toggle" data-toggle-password="credential" aria-label="Show password">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+
+            <div class="form-hint"><i class="bi bi-window-stack"></i> To sign in to a second account, open a NEW tab at /login (not Duplicate Tab). Your API JWT tokens are separate from web sessions.</div>
+
+            <button type="submit" class="btn btn--primary btn--block">
+                <span>Log In</span>
+            </button>
+        </form>
+
+        <p class="auth-card__footer">Don't have an account? <a th:href="@{/register}">Create one</a></p>
+        <p class="auth-card__footer"><a th:href="@{/forgot-password}">Forgot your password?</a></p>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/validation.js}"></script>
+
+</body>
+</html>

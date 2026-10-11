@@ -1,0 +1,27 @@
+<header class="topbar" th:fragment="topbar(title)">
+    <button class="topbar__hamburger" id="hamburgerBtn" type="button" aria-label="Toggle sidebar">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <h1 class="topbar__title" th:text="${title}">Page Title</h1>
+
+    <div class="topbar__actions">
+        <a th:href="@{/notifications}" class="topbar__icon-btn" aria-label="Notifications">
+            <i class="bi bi-bell"></i>
+            <span class="topbar__badge" th:if="${notificationCount != null and notificationCount > 0}" th:text="${notificationCount}">2</span>
+        </a>
+        <a th:href="@{/profile}" class="topbar__user">
+            <span class="topbar__avatar" th:text="${currentUser != null ? #strings.substring(currentUser.name,0,1) : '?'}">U</span>
+            <span class="topbar__username" th:text="${currentUser != null ? currentUser.name : 'Guest'}">User</span>
+        </a>
+        <a th:href="@{/login(newTab=1)}" href="/login?newTab=1" target="_blank" rel="noopener noreferrer"
+           class="topbar__icon-btn" title="Sign in another account in a new tab" aria-label="Open another account in a new tab">
+            <i class="bi bi-window-plus"></i>
+        </a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn--secondary btn--sm" title="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+</header>

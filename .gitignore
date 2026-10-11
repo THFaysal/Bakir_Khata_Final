@@ -1,0 +1,17 @@
+target
+.git
+.github
+.idea
+.vscode
+*.iml
+uploads
+*.log
+.env
+
+.env.*
+!.env.example
+
+# Local Aiven trust data
+aiven-ca.pem
+*.p12
+*.jks

@@ -1,0 +1,12 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('Encrypted conversation')}"></head><body class="app-body"><div class="app-shell"><div th:replace="~{fragments/sidebar :: sidebar('messenger')}"></div><div class="app-main"><div th:replace="~{fragments/topbar :: topbar('Encrypted conversation')}"></div><main class="page page--module"><div th:replace="~{fragments/toast :: toast}"></div>
+<div class="card"><div class="card__body"><h3 th:text="|Chat with ${peer.displayName} (${peer.messengerId})|">Conversation</h3><div id="cryptoStatus" th:attr="data-server-key=${profile.publicKey},data-identity=${profile.messengerId}">Initializing end-to-end keys...</div><p>Single-device ECDH/AES-GCM encryption demo; verify your contact's public-key fingerprint out of band before discussing sensitive matters.</p>
+<form th:unless="${blocked}" th:action="@{/messenger/block}" method="post"><input type="hidden" name="peerId" th:value="${peerId}"><button class="btn btn--secondary">Block contact</button></form>
+<form th:if="${blockedByMe}" th:action="@{/messenger/unblock}" method="post"><input type="hidden" name="peerId" th:value="${peerId}"><button class="btn btn--secondary">Unblock contact</button></form>
+<p th:if="${blocked}">Messaging is blocked between these accounts.</p>
+<div id="chatApp" th:attr="data-conversation=${conversation.id},data-self=${myId},data-peer-key=${peer.publicKey},data-blocked=${blocked}" style="max-width:720px">
+<div id="chatHistory" style="min-height:170px;max-height:400px;overflow-y:auto;background:var(--surface,#f5f6f8);border-radius:8px;padding:12px;">
+<div th:each="m:${messages}" class="encrypted-message" th:attr="data-id=${m.id},data-sender=${m.senderId},data-iv=${m.iv},data-ciphertext=${m.ciphertext},data-time=${m.createdAt}">Decrypting message...</div>
+</div>
+<form id="chatForm" class="form form--spaced"><label>Message <textarea id="chatInput" maxlength="4000" rows="3" required placeholder="Write a private message..."></textarea></label><button type="submit" class="btn btn--primary" id="chatSend" disabled>Encrypt and send</button></form>
+</div><a th:href="@{/messenger}" class="btn btn--secondary">Back to Messenger</a></div></div>
+</main></div></div><script th:src="@{/js/main.js}"></script><script th:src="@{/js/messenger.js}"></script></body></html>

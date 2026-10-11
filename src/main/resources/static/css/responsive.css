@@ -1,0 +1,169 @@
+
+@media (max-width: 900px) {
+
+    /* Sidebar: slide out off-screen, triggered by JS toggle */
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 200;
+        box-shadow: var(--shadow-lg);
+    }
+    .sidebar.sidebar--open {
+        transform: translateX(0);
+    }
+
+    /* Main takes full width when sidebar is hidden */
+    .app-main {
+        margin-left: 0;
+    }
+
+    /* Show hamburger */
+    .topbar__hamburger {
+        display: flex;
+    }
+
+    /* Stat grid: 2 columns on tablet */
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Dashboard content grid: single column */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Detail grid: 1-column on tablet */
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Form row: single column */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* Quick actions: 3-col still fine, narrow a bit */
+    .quick-actions {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* Page toolbar: wrap naturally */
+    .page-toolbar {
+        flex-wrap: wrap;
+    }
+
+    /* Stat card values smaller on tablet */
+    .stat-card__value {
+        font-size: 18px;
+    }
+}
+
+/* ---------- Mobile (≤ 600px) ---------- */
+@media (max-width: 600px) {
+
+    /* Auth card: less padding */
+    .auth-card {
+        padding: var(--space-4) var(--space-3);
+    }
+
+    /* Topbar: smaller gap */
+    .topbar {
+        padding: 0 var(--space-3);
+        gap: var(--space-2);
+    }
+    .topbar__username {
+        display: none;
+    }
+
+    /* Page: tighter padding */
+    .page {
+        padding: var(--space-3);
+    }
+
+    /* Stat grid: single column on mobile */
+    .stat-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+    }
+    .stat-card {
+        padding: var(--space-3);
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+    .stat-card__value {
+        font-size: 16px;
+    }
+
+    /* Quick actions: 2-col on mobile */
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Filter bar wraps */
+    .filter-bar {
+        flex-wrap: wrap;
+    }
+
+    /* Form card fills width */
+    .form-card {
+        max-width: 100%;
+    }
+
+    /* Form row: always 1-col on mobile */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* Reminder grid: 1-col */
+    .reminder-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Modal: full width with margin */
+    .modal {
+        margin: var(--space-3);
+    }
+
+    /* Toast: full width */
+    .toast-container {
+        left: var(--space-3);
+        right: var(--space-3);
+        max-width: none;
+    }
+
+    /* Table: let it scroll, hide less important columns */
+    .data-table td:nth-child(4),
+    .data-table th:nth-child(4) {
+        display: none;
+    }
+
+    /* Hide the detail grid's third card on mobile to avoid crowding */
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Def-list: left-aligned on mobile */
+    .def-list dd {
+        text-align: left;
+    }
+
+    /* Form actions: stack on mobile */
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ---------- Sidebar overlay (tablet/mobile) ---------- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    z-index: 150;
+}
+.sidebar-overlay.sidebar-overlay--open {
+    display: block;
+}

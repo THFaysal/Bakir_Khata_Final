@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/head :: head('Account verification')}"></head>
+<body class="app-body"><div class="app-shell"><div th:replace="~{fragments/sidebar :: sidebar('verification')}"></div><div class="app-main"><div th:replace="~{fragments/topbar :: topbar('Verify your account')}"></div>
+<main class="page page--module page--verification"><div th:replace="~{fragments/toast :: toast}"></div><h2>Verify email and mobile to join the community</h2>
+<p>Both must be verified. You can use your personal finance dashboard before verification.</p>
+<div class="card"><div class="card__body"><h3>Email <span th:text="${account.emailVerified ? 'Verified' : 'Not verified'}"></span></h3>
+<p th:text="${account.email}"></p><div class="verification-actions" th:unless="${account.emailVerified}">
+<form th:action="@{/verification/email/send}" method="post"><button class="btn btn--primary">Send email code</button></form>
+<form class="verification-confirm-form" th:action="@{/verification/email/confirm}" method="post"><label>6-digit code <input class="form-control" name="code" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required></label><button class="btn btn--secondary">Confirm email</button></form></div></div></div>
+<div class="card"><div class="card__body"><h3>Mobile <span th:text="${account.phoneVerified ? 'Verified' : 'Not verified'}"></span></h3><p th:text="${account.phone}"></p>
+<div class="verification-actions" th:unless="${account.phoneVerified}"><form th:action="@{/verification/phone/send}" method="post"><button class="btn btn--primary">Send SMS OTP</button></form>
+<form class="verification-confirm-form" th:action="@{/verification/phone/confirm}" method="post"><label>Verification code <input class="form-control" name="code" pattern="[0-9]{4,8}" maxlength="8" inputmode="numeric" autocomplete="one-time-code" required></label><button class="btn btn--secondary">Confirm mobile</button></form></div></div></div>
+<a th:if="${account.emailVerified and account.phoneVerified}" th:href="@{/community}" class="btn btn--primary">Enter Community</a>
+</main></div></div><script th:src="@{/js/main.js}"></script></body></html>

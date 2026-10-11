@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
+<body class="app-body"><div class="app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></div>
+<div class="app-main"><div th:replace="~{fragments/topbar :: topbar('Dashboard')}"></div><div th:replace="~{fragments/toast :: toast}"></div>
+<main class="page">
+<section class="dashboard-hero"><div><h2>Welcome back, <span th:text="${currentUser.name}">User</span> 👋</h2><p>Your borrowing, repayments and payment habits at a glance.</p></div></section>
+<section class="stat-grid">
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--blue"><i class="bi bi-wallet2"></i></div><div class="stat-card__body"><span class="stat-card__label">Total Borrowed</span><span class="stat-card__value" th:text="'৳ ' + ${#numbers.formatDecimal(summary.totalBorrowed,0,'COMMA',2,'POINT')}">0</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--green"><i class="bi bi-check-circle"></i></div><div class="stat-card__body"><span class="stat-card__label">Total Paid</span><span class="stat-card__value" th:text="'৳ ' + ${#numbers.formatDecimal(summary.totalPaid,0,'COMMA',2,'POINT')}">0</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--amber"><i class="bi bi-hourglass-split"></i></div><div class="stat-card__body"><span class="stat-card__label">Remaining</span><span class="stat-card__value" th:text="'৳ ' + ${#numbers.formatDecimal(summary.remainingBalance,0,'COMMA',2,'POINT')}">0</span></div></div>
+<div class="stat-card"><div class="stat-card__icon stat-card__icon--red"><i class="bi bi-exclamation-triangle"></i></div><div class="stat-card__body"><span class="stat-card__label">Overdue Loans</span><span class="stat-card__value" th:text="${summary.overdueCount}">0</span></div></div>
+</section>
+<section class="chart-grid">
+<div class="card chart-card"><div class="card__header"><h3>Repayment trend</h3></div><div class="chart-card__body"><canvas id="repaymentChart" data-chart="line" data-label="Repayments"></canvas></div></div>
+<div class="card chart-card"><div class="card__header"><h3>Loan balance</h3></div><div class="chart-card__body chart-card__body--compact"><canvas id="balanceChart" data-chart="doughnut" data-label="Balance"></canvas></div></div>
+<div class="card chart-card"><div class="card__header"><h3>Payment methods</h3></div><div class="chart-card__body chart-card__body--compact"><canvas id="methodChart" data-chart="doughnut" data-label="Payments"></canvas></div></div>
+</section>
+<section class="dashboard-grid">
+<div class="card"><div class="card__header"><h3>Upcoming Due Loans</h3><a th:href="@{/loans}" class="link-muted">View all</a></div><div class="card__body"><div class="empty-state" th:if="${summary.upcomingDueLoans.isEmpty()}"><i class="bi bi-inboxes"></i><p class="empty-state__title">No upcoming loans</p></div><ul class="mini-list" th:unless="${summary.upcomingDueLoans.isEmpty()}"><li class="mini-list__item" th:each="loan : ${summary.upcomingDueLoans}"><a th:href="@{/loans/{id}(id=${loan.id})}" class="mini-list__link"><div><span class="mini-list__title" th:text="${loan.lender.name}">Lender</span><span class="mini-list__sub" th:text="'Due ' + ${#temporals.format(loan.dueDate,'dd MMM yyyy')}">Date</span></div><div class="mini-list__right"><span class="mini-list__amount" th:text="'৳ ' + ${#numbers.formatDecimal(loan.totalOutstanding,0,'COMMA',2,'POINT')}">0</span><span th:replace="~{fragments/badges :: statusBadge(${loan.status})}"></span></div></a></li></ul></div></div>
+<div class="card"><div class="card__header"><h3>Recent Payments</h3></div><div class="card__body"><div class="empty-state" th:if="${summary.recentPayments.isEmpty()}"><i class="bi bi-receipt"></i><p class="empty-state__title">No payments yet</p></div><ul class="mini-list" th:unless="${summary.recentPayments.isEmpty()}"><li class="mini-list__item" th:each="payment : ${summary.recentPayments}"><a th:href="@{/loans/{id}(id=${payment.loan.id})}" class="mini-list__link"><div><span class="mini-list__title" th:text="'Paid to ' + ${payment.loan.lender.name}">Lender</span><span class="mini-list__sub" th:text="${#temporals.format(payment.paymentDate,'dd MMM yyyy')}">Date</span></div><span class="mini-list__amount mini-list__amount--success" th:text="'৳ ' + ${#numbers.formatDecimal(payment.amount,0,'COMMA',2,'POINT')}">0</span></a></li></ul></div></div>
+<div class="card"><div class="card__header"><h3>Quick Actions</h3></div><div class="card__body quick-actions"><a th:href="@{/loans/new}" class="quick-action"><i class="bi bi-plus-circle"></i><span>Add Loan</span></a><a th:href="@{/payments/new}" class="quick-action"><i class="bi bi-credit-card"></i><span>Make Payment</span></a><a th:href="@{/transactions}" class="quick-action"><i class="bi bi-arrow-left-right"></i><span>Transactions</span></a></div></div>
+</section>
+</main></div></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+(function () {
+    const repaymentLabels = /*[[${repaymentLabels}]]*/ [];
+    const repaymentValues = /*[[${repaymentValues}]]*/ [];
+    const balanceLabels = /*[[${balanceLabels}]]*/ [];
+    const balanceValues = /*[[${balanceValues}]]*/ [];
+    const methodLabels = /*[[${methodLabels}]]*/ [];
+    const methodValues = /*[[${methodValues}]]*/ [];
+    const charts = {
+        repaymentChart: [repaymentLabels, repaymentValues],
+        balanceChart: [balanceLabels, balanceValues],
+        methodChart: [methodLabels, methodValues]
+    };
+    Object.entries(charts).forEach(([id, data]) => {
+        const canvas = document.getElementById(id);
+        if (canvas) {
+            canvas.dataset.labels = JSON.stringify(data[0]);
+            canvas.dataset.values = JSON.stringify(data[1]);
+        }
+    });
+})();
+</script>
+<script th:src="@{/js/dashboard-charts.js}"></script><script th:src="@{/js/main.js}"></script>
+</body></html>

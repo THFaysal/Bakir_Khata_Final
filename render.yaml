@@ -1,0 +1,58 @@
+# Blueprint declaration only. Provisioning this service may incur Render charges.
+services:
+  - type: web
+    name: bakir-khata
+    runtime: docker
+    plan: starter
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SECURE_COOKIE
+        value: "true"
+      - key: APP_JWT_SECRET
+        sync: false
+      - key: APP_RECEIPT_SECRET
+        sync: false
+      - key: APP_ADMIN_EMAIL
+        sync: false
+      - key: APP_ADMIN_PASSWORD
+        sync: false
+      - key: APP_ADMIN_PHONE
+        sync: false
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: AIVEN_CA_CERT_BASE64
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: APP_PUBLIC_BASE_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_MODE
+        value: resend
+      - key: OTP_MODE
+        value: twilio
+      - key: PAYMENT_MODE
+        value: sandbox
+      - key: OTP_FALLBACK_TO_DEMO
+        value: "false"
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
+        sync: false
+      - key: SSLCOMMERZ_SANDBOX_STORE_ID
+        sync: false
+      - key: SSLCOMMERZ_SANDBOX_STORE_PASSWORD
+        sync: false

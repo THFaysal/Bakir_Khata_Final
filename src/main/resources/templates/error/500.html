@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Error')}"></head>
+<body class="auth-body">
+<div class="auth-wrap">
+    <div class="auth-card auth-card--centered">
+        <i class="bi bi-exclamation-octagon error-icon error-icon--danger"></i>
+        <h1>Something went wrong</h1>
+        <p th:text="${message} ?: 'Please try again in a moment.'">Error</p>
+        <a href="/dashboard" class="btn btn--primary">Back to Dashboard</a>
+    </div>
+</div>
+</body>
+</html>

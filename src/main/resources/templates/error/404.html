@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Not Found')}"></head>
+<body class="auth-body">
+<div class="auth-wrap">
+    <div class="auth-card auth-card--centered">
+        <i class="bi bi-emoji-frown error-icon error-icon--muted"></i>
+        <h1>404</h1>
+        <p th:text="${message} ?: 'The page you are looking for could not be found.'">Not found</p>
+        <a href="/dashboard" class="btn btn--primary">Back to Dashboard</a>
+    </div>
+</div>
+</body>
+</html>

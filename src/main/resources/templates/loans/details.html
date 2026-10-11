@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Loan Details')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('loans')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Loan Details')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <main class="page">
+            <div class="detail-grid">
+                <div class="card">
+                    <div class="card__header">
+                        <h3><i class="bi bi-person"></i> Lender Information</h3>
+                    </div>
+                    <div class="card__body">
+                        <dl class="def-list">
+                            <dt>Name</dt><dd th:text="${loan.lender.name}">Name</dd>
+                            <dt>Phone</dt><dd th:text="${loan.lender.phone}">Phone</dd>
+                            <dt>Relationship</dt><dd th:text="${#strings.replace(#strings.toLowerCase(loan.lender.relationship),'_',' ')}">Friend</dd>
+                            <dt th:if="${loan.lender.email}">Email</dt><dd th:if="${loan.lender.email}" th:text="${loan.lender.email}">Email</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h3><i class="bi bi-cash-coin"></i> Loan Summary</h3>
+                        <div class="table-actions">
+                            <a th:if="${!communityConfirmed and !loan.fullyLocked}" th:href="@{/loans/{id}/edit(id=${loan.id})}" class="icon-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <form th:if="${!communityConfirmed and loan.deletable}" th:action="@{/loans/{id}/delete(id=${loan.id})}" method="post" class="confirm-delete-form" data-name="this loan">
+                                <button type="submit" class="icon-btn icon-btn--danger" title="Delete"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <dl class="def-list">
+                            <dt>Loan ID</dt><dd th:text="'#' + ${loan.id}">#1</dd>
+                            <dt>Amount</dt><dd th:text="'৳ ' + ${#numbers.formatDecimal(loan.amount, 0, 'COMMA', 2, 'POINT')}">0</dd>
+                            <dt>Borrow Date</dt><dd th:text="${#temporals.format(loan.borrowDate, 'dd MMM yyyy')}">Date</dd>
+                            <dt>Due Date</dt><dd th:text="${#temporals.format(loan.dueDate, 'dd MMM yyyy')}">Date</dd>
+                            <dt>Purpose</dt><dd th:text="${loan.purpose ?: '—'}">Purpose</dd>
+                            <dt>Priority</dt><dd><span th:replace="~{fragments/badges :: priorityBadge(${loan.priority})}"></span></dd>
+                            <dt>Status</dt><dd><span th:replace="~{fragments/badges :: statusBadge(${loan.status})}"></span></dd>
+                        </dl>
+                        <div class="receipt-actions" style="margin-top:16px">
+                            <a class="btn btn--secondary btn--sm" th:href="@{/receipts/loans/{id}.pdf(id=${loan.id})}"><i class="bi bi-download"></i> Loan PDF</a>
+                            <a class="btn btn--primary btn--sm" th:if="${settlementAvailable}"
+                               th:href="@{/receipts/loans/{id}/settlement.pdf(id=${loan.id})}"><i class="bi bi-patch-check"></i> Settlement PDF</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__header">
+                        <h3><i class="bi bi-hourglass-split"></i> Remaining Balance</h3>
+                    </div>
+                    <div class="card__body">
+                        <p class="balance-figure" th:text="'৳ ' + ${#numbers.formatDecimal(loan.totalOutstanding, 0, 'COMMA', 2, 'POINT')}">0</p>
+                        <dl class="def-list" th:if="${loan.overduePenalty != null and loan.overduePenalty.signum() > 0}" class="mb-3"><dt>Remaining principal</dt><dd th:text="'৳ ' + ${#numbers.formatDecimal(loan.remainingAmount,0,'COMMA',2,'POINT')}"></dd><dt>Overdue penalty</dt><dd class="text-danger" th:text="'৳ ' + ${#numbers.formatDecimal(loan.overduePenalty,0,'COMMA',2,'POINT')}"></dd><dt>Overdue days</dt><dd th:text="${loan.overdueDays}"></dd></dl>
+                        <div class="progress-bar">
+                            <div class="progress-bar__fill" th:style="'width: ' + ${loan.repaymentPercentage} + '%'"></div>
+                        </div>
+                        <p class="progress-bar__label" th:text="${loan.repaymentPercentage} + '% repaid'">0% repaid</p>
+                        <a th:href="@{/payments/new(loanId=${loan.id})}" class="btn btn--primary btn--block" th:unless="${loan.status.name() == 'PAID'}">
+                            <i class="bi bi-cash-stack"></i> Make Payment
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card__header">
+                    <h3><i class="bi bi-clock-history"></i> Payment Timeline</h3>
+                </div>
+                <div class="card__body">
+                    <div class="empty-state" th:if="${payments.isEmpty()}">
+                        <i class="bi bi-receipt"></i>
+                        <p class="empty-state__title">No payments recorded yet</p>
+                        <p class="empty-state__desc">Record a payment to start the timeline.</p>
+                    </div>
+
+                    <ol class="timeline" th:unless="${payments.isEmpty()}">
+                        <li class="timeline__item timeline__item--start">
+                            <span class="timeline__dot"></span>
+                            <div class="timeline__content">
+                                <strong>Borrowed</strong>
+                                <span th:text="'৳ ' + ${#numbers.formatDecimal(loan.amount, 0, 'COMMA', 2, 'POINT')}">0</span>
+                                <span class="timeline__date" th:text="${#temporals.format(loan.borrowDate, 'dd MMM yyyy')}">Date</span>
+                            </div>
+                        </li>
+                        <li class="timeline__item" th:each="payment : ${payments}">
+                            <span class="timeline__dot timeline__dot--success"></span>
+                            <div class="timeline__content">
+                                <strong th:text="'Paid ৳ ' + ${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 2, 'POINT')}">Paid</strong>
+                                <span th:text="${#strings.replace(#strings.toLowerCase(payment.paymentMethod),'_',' ')} + (${payment.notes} != null ? ' · ' + ${payment.notes} : '')">Cash</span>
+                                <span class="timeline__date" th:text="${#temporals.format(payment.paymentDate, 'dd MMM yyyy')}">Date</span>
+                                <a th:href="@{/receipts/payments/{id}.pdf(id=${payment.id})}" class="btn btn--secondary btn--sm" style="margin-top:8px">
+                                    <i class="bi bi-download"></i> Payment PDF
+                                </a>
+                                <a th:if="${payment.proofFilePath}"
+                                   th:href="${payment.proofFilePath}"
+                                   target="_blank"
+                                   class="link-muted">
+                                    <i class="bi bi-paperclip"></i> View proof
+                                </a>
+                            </div>
+                        </li>
+                        <li class="timeline__item timeline__item--end" th:if="${loan.status.name() == 'PAID'}">
+                            <span class="timeline__dot timeline__dot--success"></span>
+                            <div class="timeline__content">
+                                <strong>Completed</strong>
+                                <span>Loan fully repaid</span>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+        <h3>Delete Loan?</h3>
+        <p>This action cannot be undone.</p>
+        <div class="modal__actions">
+            <button type="button" class="btn btn--secondary" id="modalCancel">Cancel</button>
+            <button type="button" class="btn btn--danger" id="modalConfirm">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/table.js}"></script>
+</body>
+</html>

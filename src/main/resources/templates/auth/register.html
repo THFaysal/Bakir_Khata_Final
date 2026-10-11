@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Register')}"></head>
+<body class="auth-body">
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-card__brand">
+            <img class="auth-card__image" th:src="@{/branding/bakir-khata-mark.png}" src="/branding/bakir-khata-mark.png" alt="Bakir Khata logo"/>
+            <h1>Create your account</h1>
+            <p>Start tracking loans and repayments in minutes.</p>
+        </div>
+
+        <form th:action="@{/register}" th:object="${registrationDTO}" method="post" class="form" id="registerForm" novalidate>
+
+            <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('name')} ? 'form-group--invalid' : ''">
+                <input type="text" id="name" th:field="*{name}" class="form-control" placeholder=" " required/>
+                <label for="name">Full name</label>
+                <i class="bi bi-person form-group__icon"></i>
+                <span class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Error</span>
+            </div>
+
+            <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('email')} ? 'form-group--invalid' : ''">
+                <input type="email" id="email" th:field="*{email}" class="form-control" placeholder=" " required/>
+                <label for="email">Email address</label>
+                <i class="bi bi-envelope form-group__icon"></i>
+                <span class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Error</span>
+            </div>
+
+            <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('phone')} ? 'form-group--invalid' : ''">
+                <input type="tel" id="phone" th:field="*{phone}" class="form-control" placeholder=" " required/>
+                <label for="phone">Phone number</label>
+                <i class="bi bi-telephone form-group__icon"></i>
+                <span class="form-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Error</span>
+            </div>
+
+            <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('password')} ? 'form-group--invalid' : ''">
+                <input type="password" id="password" th:field="*{password}" class="form-control" placeholder=" " required minlength="8"/>
+                <label for="password">Password</label>
+                <button type="button" class="form-group__toggle" data-toggle-password="password" aria-label="Show password">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <span class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Error</span>
+            </div>
+
+            <div class="form-group form-group--floating" th:classappend="${#fields.hasErrors('confirmPassword')} ? 'form-group--invalid' : ''">
+                <input type="password" id="confirmPassword" th:field="*{confirmPassword}" class="form-control" placeholder=" " required minlength="8"/>
+                <label for="confirmPassword">Confirm password</label>
+                <button type="button" class="form-group__toggle" data-toggle-password="confirmPassword" aria-label="Show password">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <span class="form-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Error</span>
+            </div>
+
+            <p class="form-hint form-hint--tight">Use your email or mobile number with a strong password to sign in. Complete email and mobile verification after registration to join the community.</p>
+
+            <button type="submit" class="btn btn--primary btn--block">Create Account</button>
+        </form>
+
+        <p class="auth-card__footer">Already have an account? <a th:href="@{/login}">Log in</a></p>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/validation.js}"></script>
+</body>
+</html>

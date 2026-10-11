@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Transactions')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('transactions')}"></div>
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Transactions')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+        <main class="page">
+            <div class="alert alert--warning" role="status" style="margin-bottom:16px">
+                Mobile and sandbox payment records are demonstration transactions; they do not represent actual wallet or bank transfers.
+            </div>
+            <section class="card">
+                <div class="card__header">
+                    <div>
+                        <h3>Cash payments awaiting your confirmation</h3>
+                        <p class="empty-state__desc">Accept only after you have actually received the cash.</p>
+                    </div>
+                </div>
+                <div class="card__body">
+                    <div th:if="${#lists.isEmpty(pendingForMe)}" class="empty-state"><i class="bi bi-check2-circle"></i><p class="empty-state__title">Nothing waiting</p></div>
+                    <div class="account-grid" th:unless="${#lists.isEmpty(pendingForMe)}">
+                        <div class="account-card" th:each="tx:${pendingForMe}">
+                            <span class="badge badge--warning">Cash confirmation</span>
+                            <h3 th:text="${tx.borrowerName}">Borrower</h3>
+                            <dl class="def-list">
+                                <dt>Loan</dt><dd th:text="${'#'+tx.loanId}"></dd>
+                                <dt>Principal</dt><dd th:text="${'৳'+tx.amount}"></dd>
+                                <dt>Penalty</dt><dd th:text="${'৳'+tx.overduePenalty}"></dd>
+                                <dt>Total charged to borrower</dt><dd th:text="${'৳'+tx.totalPayable}"></dd>
+                            </dl>
+                            <div class="table-actions table-actions--spaced">
+                                <form th:action="@{/transactions/{id}/reject(id=${tx.id})}" method="post"><button class="btn btn--danger" type="submit">Reject</button></form>
+                                <form th:action="@{/transactions/{id}/accept(id=${tx.id})}" method="post"><button class="btn btn--primary" type="submit">Accept received cash</button></form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card__header"><h3>Your submitted payments</h3><a class="btn btn--primary btn--sm" th:href="@{/payments/new}">New payment</a></div>
+                <div class="card__body">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>To</th><th>Principal</th><th>Fee</th><th>Penalty</th><th>Total</th><th>Provider</th><th>Status</th><th>Reference</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <tr th:each="tx:${submitted}">
+                                <td th:text="${tx.lenderName}"></td><td th:text="${'৳'+tx.amount}"></td><td th:text="${'৳'+tx.serviceFee}"></td>
+                                <td th:text="${'৳'+tx.overduePenalty}"></td><td><strong th:text="${'৳'+tx.totalPayable}"></strong></td>
+                                <td th:text="${tx.paymentProvider != null ? tx.paymentProvider : tx.method}"></td>
+                                <td><span class="badge badge--gray" th:text="${tx.status}"></span></td>
+                                <td th:text="${tx.gatewayReference != null ? tx.gatewayReference : '—'}"></td>
+                                <td>
+                                    <a th:if="${tx.status.name() == 'SUCCESS'}"
+                                       th:href="@{/receipts/transactions/{id}.pdf(id=${tx.id})}" class="btn btn--secondary btn--sm"><i class="bi bi-download"></i> PDF receipt</a>
+                                    <a th:if="${tx.status.name() == 'PENDING' and tx.method.name() == 'MOBILE_BANKING' and #strings.startsWith(tx.paymentProvider, 'DEMO - ')}"
+                                       th:href="@{/payments/demo/{id}(id=${tx.id})}" class="btn btn--primary btn--sm">Finish demo</a>
+                                    <form th:if="${tx.status.name() == 'OTP_REQUIRED' or tx.status.name() == 'AWAITING_LENDER_CONFIRMATION' or tx.status.name() == 'PENDING' or tx.status.name() == 'PROCESSING'}"
+                                          th:action="@{/transactions/{id}/cancel(id=${tx.id})}" method="post">
+                                        <button class="btn btn--secondary btn--sm" type="submit">Cancel</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(submitted)}"><td colspan="9">No payments submitted yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

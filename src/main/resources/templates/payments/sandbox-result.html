@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Sandbox Checkout Result')}"></head>
+<body class="app-body">
+<main class="page" style="max-width:700px;margin:70px auto">
+    <section class="card">
+        <div class="card__header"><h3>Payment Sandbox — Test Result</h3></div>
+        <div class="card__body">
+            <div class="alert alert--warning" role="status">No real money has been transferred.</div>
+            <p th:text="${sandboxMessage}">Your test checkout result has been received.</p>
+            <p>Only a result independently verified using the provider's order-validation API updates the demo ledger.</p>
+            <a class="btn btn--primary" th:href="@{/transactions}">View transactions (sign in if requested)</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<aside class="sidebar" id="sidebar" th:fragment="sidebar(active)" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <div class="sidebar__brand"><span class="sidebar__logo"><img th:src="@{/branding/bakir-khata-mark.png}" src="/branding/bakir-khata-mark.png" alt="Bakir Khata icon"/></span><span class="sidebar__name">Bakir <span class="brand-gold">Khata</span></span></div>
+    <nav class="sidebar__nav">
+
+
+        <th:block sec:authorize="hasRole('USER')">
+            <a th:href="@{/dashboard}" class="sidebar__link" th:classappend="${active == 'dashboard'} ? 'sidebar__link--active'"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+            <a th:href="@{/lenders}" class="sidebar__link" th:classappend="${active == 'lenders'} ? 'sidebar__link--active'"><i class="bi bi-people"></i><span>Lenders</span></a>
+            <a th:href="@{/loans}" class="sidebar__link" th:classappend="${active == 'loans'} ? 'sidebar__link--active'"><i class="bi bi-cash-coin"></i><span>Loans</span></a>
+            <a th:href="@{/payments/new}" class="sidebar__link" th:classappend="${active == 'payments'} ? 'sidebar__link--active'"><i class="bi bi-credit-card"></i><span>Payment</span></a>
+            <a th:href="@{/transactions}" class="sidebar__link" th:classappend="${active == 'transactions'} ? 'sidebar__link--active'"><i class="bi bi-arrow-left-right"></i><span>Transactions</span></a>
+            <a th:href="@{/receipts}" class="sidebar__link" th:classappend="${active == 'receipts'} ? 'sidebar__link--active'"><i class="bi bi-file-earmark-arrow-down"></i><span>My receipts</span></a>
+            <a th:href="@{/reminders}" class="sidebar__link" th:classappend="${active == 'reminders'} ? 'sidebar__link--active'"><i class="bi bi-bell"></i><span>Reminders</span></a>
+            <a th:if="${currentUser != null and currentUser.coordinatorEligible}" th:href="@{/coordinator/apply}" class="sidebar__link" th:classappend="${active == 'coordinator'} ? 'sidebar__link--active'"><i class="bi bi-person-badge"></i><span>Become Coordinator</span></a>
+        </th:block>
+
+        <th:block sec:authorize="hasRole('COORDINATOR')">
+            <a th:href="@{/coordinator/dashboard}" class="sidebar__link" th:classappend="${active == 'coordinator-dashboard'} ? 'sidebar__link--active'"><i class="bi bi-activity"></i><span>Operations</span></a>
+            <a th:href="@{/transactions/review}" class="sidebar__link" th:classappend="${active == 'transactions-review'} ? 'sidebar__link--active'"><i class="bi bi-receipt"></i><span>Transactions</span></a>
+            <a th:href="@{/management/users}" class="sidebar__link" th:classappend="${active == 'users'} ? 'sidebar__link--active'"><i class="bi bi-people"></i><span>Users</span></a>
+        </th:block>
+
+        <th:block sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/admin}" class="sidebar__link" th:classappend="${active == 'admin'} ? 'sidebar__link--active'"><i class="bi bi-shield-lock"></i><span>Admin Finance</span></a>
+            <a th:href="@{/coordinator/dashboard}" class="sidebar__link" th:classappend="${active == 'coordinator-dashboard'} ? 'sidebar__link--active'"><i class="bi bi-activity"></i><span>Operations</span></a>
+            <a th:href="@{/management/users}" class="sidebar__link" th:classappend="${active == 'users'} ? 'sidebar__link--active'"><i class="bi bi-people"></i><span>Users</span></a>
+            <a th:href="@{/coordinator/applications}" class="sidebar__link"><i class="bi bi-person-check"></i><span>Applications</span></a>
+            <a th:href="@{/coordinator/list}" class="sidebar__link"><i class="bi bi-person-badge"></i><span>Coordinators</span></a>
+            <a th:href="@{/admin/plans}" class="sidebar__link"><i class="bi bi-gem"></i><span>Manage plans</span></a>
+            <a th:href="@{/transactions/review}" class="sidebar__link"><i class="bi bi-receipt"></i><span>Transactions</span></a>
+        </th:block>
+
+        <th:block sec:authorize="hasRole('USER')">
+          <a th:href="@{/verification}" class="sidebar__link" th:classappend="${active == 'verification'} ? 'sidebar__link--active'"><i class="bi bi-patch-check"></i><span>Verification</span></a>
+          <a th:href="@{/community}" class="sidebar__link" th:classappend="${active == 'community'} ? 'sidebar__link--active'"><i class="bi bi-megaphone"></i><span>Community</span></a>
+          <a th:href="@{/messenger}" class="sidebar__link" th:classappend="${active == 'messenger'} ? 'sidebar__link--active'"><i class="bi bi-chat-dots"></i><span>Messenger</span></a>
+          <a th:href="@{/subscription}" class="sidebar__link" th:classappend="${active == 'subscriptions'} ? 'sidebar__link--active'"><i class="bi bi-gem"></i><span>Subscription</span></a>
+        </th:block>
+        <th:block sec:authorize="hasAnyRole('COORDINATOR','ADMIN')">
+          <a th:href="@{/moderation}" class="sidebar__link" th:classappend="${active == 'moderation'} ? 'sidebar__link--active'"><i class="bi bi-flag"></i><span>Moderation</span></a>
+        </th:block>
+        <a th:href="@{/profile}" class="sidebar__link" th:classappend="${active == 'profile'} ? 'sidebar__link--active'"><i class="bi bi-person-circle"></i><span>Profile</span></a>
+    </nav>
+</aside>

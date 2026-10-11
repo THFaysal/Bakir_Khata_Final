@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Coordinator Applications')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('admin')}"></div>
+
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Coordinator Applications')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+
+        <main class="page">
+            <section class="card">
+                <div class="card__body">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr><th>Applicant</th><th>Email</th><th>Reason</th><th>Status</th><th>Applied</th><th>Action</th></tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="app : ${applications}">
+                                <td th:text="${app.userName}"></td>
+                                <td th:text="${app.userEmail}"></td>
+                                <td th:text="${app.reason}"></td>
+                                <td th:text="${app.status}"></td>
+                                <td th:text="${app.appliedAt}"></td>
+                                <td th:if="${app.status.name() == 'PENDING'}" class="table-actions">
+                                    <form th:action="@{'/coordinator/applications/' + ${app.id} + '/approve'}" method="post" class="inline-form">
+                                        <button type="submit" class="btn btn--sm btn--primary">Approve</button>
+                                    </form>
+                                    <form th:action="@{'/coordinator/applications/' + ${app.id} + '/reject'}" method="post" class="inline-form">
+                                        <button type="submit" class="btn btn--sm btn--danger">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(applications)}"><td colspan="6">No applications yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

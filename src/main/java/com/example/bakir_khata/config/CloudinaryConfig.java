@@ -1,0 +1,31 @@
+package com.example.bakir_khata.config;
+
+import com.cloudinary.Cloudinary;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Map;
+
+@Configuration(proxyBeanMethods = false)
+public class CloudinaryConfig {
+
+    @Bean
+    public Cloudinary cloudinary(
+            @Value("${CLOUDINARY_URL:}") String cloudinaryUrl,
+            @Value("${CLOUDINARY_CLOUD_NAME:}") String cloudName,
+            @Value("${CLOUDINARY_API_KEY:}") String apiKey,
+            @Value("${CLOUDINARY_API_SECRET:}") String apiSecret) {
+        Cloudinary client;
+        if (cloudinaryUrl != null && !cloudinaryUrl.isBlank()) {
+            client = new Cloudinary(cloudinaryUrl);
+        } else {
+            client = new Cloudinary(Map.of(
+                    "cloud_name", cloudName,
+                    "api_key", apiKey,
+                    "api_secret", apiSecret));
+        }
+        client.config.secure = true;
+        return client;
+    }
+}

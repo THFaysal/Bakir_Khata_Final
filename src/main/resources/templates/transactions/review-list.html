@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Transaction Monitoring')}"></head>
+<body class="app-body">
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('transactions-review')}"></div>
+    <div class="app-main">
+        <div th:replace="~{fragments/topbar :: topbar('Transaction Monitoring')}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
+        <main class="page"><div class="alert alert--warning" role="status" style="margin-bottom:14px">University demo: mobile and sandbox financial amounts may be simulated. Reported totals are demonstration ledger totals, not money transferred or earned by the platform.</div>
+            <section class="card">
+                <div class="card__header">
+                    <div>
+                        <h3>Immutable financial history</h3>
+                        <p class="empty-state__desc">Coordinator/Admin can monitor and flag suspicious activity, but successful financial values are never edited or deleted.</p>
+                    </div>
+                </div>
+                <div class="card__body">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>ID</th><th>Borrower</th><th>Lender</th><th>Principal</th><th>Fee</th>
+                                <th>Penalty</th><th>Total</th><th>Provider</th><th>Status</th><th>Reference</th>
+                                <th>Submitted</th><th>Operational review</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="tx : ${transactions}">
+                                <td th:text="${'#' + tx.id}"></td>
+                                <td th:text="${tx.borrowerName}"></td>
+                                <td th:text="${tx.lenderName}"></td>
+                                <td th:text="${'৳' + tx.amount}"></td>
+                                <td th:text="${'৳' + tx.serviceFee}"></td>
+                                <td th:text="${'৳' + tx.overduePenalty}"></td>
+                                <td><strong th:text="${'৳' + tx.totalPayable}"></strong></td>
+                                <td th:text="${tx.paymentProvider != null ? tx.paymentProvider : tx.method}"></td>
+                                <td>
+                                    <span class="badge badge--danger" th:if="${tx.flagged}">FLAGGED</span>
+                                    <span class="badge badge--gray" th:text="${tx.status}"></span>
+                                </td>
+                                <td th:text="${tx.gatewayReference != null ? tx.gatewayReference : (tx.transactionReferenceId != null ? tx.transactionReferenceId : '—')}"></td>
+                                <td th:text="${#temporals.format(tx.createdAt,'dd MMM yyyy HH:mm')}"></td>
+                                <td class="review-note-cell">
+                                    <form th:action="@{/transactions/{id}/flag(id=${tx.id})}" method="post" class="stack-sm">
+                                        <input type="hidden" name="flagged" th:value="${!tx.flagged}">
+                                        <textarea name="reviewNote" rows="2" maxlength="500"
+                                                  th:placeholder="${tx.flagged ? 'Update/clear review note' : 'Reason for flagging (recommended)'}"
+                                                  th:text="${tx.reviewNote}"></textarea>
+                                        <button class="btn btn--sm" th:classappend="${tx.flagged ? ' btn--secondary' : ' btn--danger'}"
+                                                type="submit" th:text="${tx.flagged ? 'Clear flag' : 'Flag transaction'}"></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="12">No transactions yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
